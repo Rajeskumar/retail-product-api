@@ -16,16 +16,18 @@ repositories {
 dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter-data-cassandra'
 	implementation 'org.springframework.boot:spring-boot-starter-web'
-	implementation 'io.springfox:springfox-boot-starter:3.0.0'
-	testImplementation('org.springframework.boot:spring-boot-starter-test') {
-		exclude group: 'org.junit.vintage', module: 'junit-vintage-engine'
-	}
-	testCompile(
+	implementation 'io.springfox:springfox-swagger2:2.7.0'
+	implementation 'io.springfox:springfox-swagger-ui:2.7.0'
+	implementation 'org.springframework.retry:spring-retry:1.2.5.RELEASE'
+	implementation 'org.springframework:spring-aspects:5.2.8.RELEASE'
+
+	testImplementation(
 			'org.codehaus.groovy:groovy-all:2.5.13',
 			'org.spockframework:spock-core:1.3-groovy-2.5'
 	)
 }
-/*
-test {
-	useJUnitPlatform()
-}*/
+
+//configurations.all {
+//	exclude group: 'org.springframework.boot', module: 'spring-boot-starter-logging'
+//	exclude group: 'org.springframework.boot', module: 'logback-classic'
+//}

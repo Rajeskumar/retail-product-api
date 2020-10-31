@@ -1,6 +1,10 @@
 package com.retail.productapi.service;
 
-import org.springframework.http.ResponseEntity;
+import org.springframework.retry.annotation.Backoff;
+import org.springframework.retry.annotation.Retryable;
+import org.springframework.scheduling.annotation.Async;
+
+import java.util.concurrent.CompletableFuture;
 
 public interface ExternalAPIService<T> {
 
@@ -9,5 +13,7 @@ public interface ExternalAPIService<T> {
      * @param apiURL
      * @return
      */
-    ResponseEntity<T> fetchAPIResponse (String apiURL, Class<T> responseType);
+    @Async
+    @Retryable(value = Exception.class, backoff = @Backoff(delay = 500))
+    CompletableFuture<T> fetchAPIResponse (String apiURL, Class<T> responseType);
 }

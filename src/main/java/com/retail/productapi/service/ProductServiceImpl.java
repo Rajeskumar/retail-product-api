@@ -4,6 +4,8 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.retail.productapi.dao.ProductPriceRepository;
 import com.retail.productapi.domain.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
@@ -11,9 +13,12 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClientException;
 
 import java.util.Optional;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
 
+/**
+ * This holds implementations of ProductServices
+ */
 @Service
 public class ProductServiceImpl implements ProductService {
 
@@ -23,7 +28,7 @@ public class ProductServiceImpl implements ProductService {
 
     private ExternalAPIService externalAPIService;
 
-    private static final Logger logger = Logger.getLogger(ProductServiceImpl.class.getName());
+    private static final Logger logger = LoggerFactory.getLogger(ProductServiceImpl.class);
 
     @Autowired
     public ProductServiceImpl(ProductPriceRepository productPriceRepository, ObjectMapper objectMapper, ExternalAPIService externalAPIService) {
@@ -38,20 +43,37 @@ public class ProductServiceImpl implements ProductService {
     @Value("${redsky.api.url.params}")
     private String redskyAPIURLParams;
 
+
+    /**
+     * Gets product detail by productId
+     *
+     * @param productId
+     * @return @{ProductAPIResponse}
+     */
+    @Override
+    public ProductAPIResponse getProductDetail(int productId) throws Exception{
+
+        Product redskyProductData = getRedskyAPIProductData(productId);
+        ProductPriceData productPriceData = getProductPriceData(productId);
+
+        if(redskyProductData == null && productPriceData == null){
+            return null;
+        }
+        return buildProductAPIResponse(productId, redskyProductData, productPriceData);
+    }
     /**
      * Gets Product pricing data from datastore by productId
      *
      * @param productId
      * @return @{ProductPriceData}
      */
-    @Override
     public ProductPriceData getProductPriceData(int productId) {
         Optional<ProductPriceData> productPriceData =  productPriceRepository.findById(productId);
 
         if(productPriceData.isPresent()){
             return productPriceData.get();
         }else{
-            logger.log(Level.WARNING, "Pricing Data not available in Datastore.");
+            logger.info("Pricing Data not available in Datastore.");
             return null;
         }
     }
@@ -62,41 +84,26 @@ public class ProductServiceImpl implements ProductService {
      * @param productId
      * @return @{RedskyAPIProductData}
      */
-    @Override
-    public Product getRedskyAPIProductData(int productId) {
+    public Product getRedskyAPIProductData(int productId) throws Exception{
 
         Product productData = null;
         try{
-            ResponseEntity<RedskyAPIProductData> redskyAPIResponse = externalAPIService.fetchAPIResponse(redskyAPIURLBase+productId+redskyAPIURLParams, RedskyAPIProductData.class);
+            CompletableFuture<ResponseEntity<RedskyAPIProductData>> apiResponse = externalAPIService
+                    .fetchAPIResponse(redskyAPIURLBase+productId+redskyAPIURLParams, RedskyAPIProductData.class);
 
+            ResponseEntity<RedskyAPIProductData> redskyAPIResponse = apiResponse.get();
             if(redskyAPIResponse.getStatusCode().is2xxSuccessful()){
                 productData = redskyAPIResponse.getBody().getProduct();
+                logger.info("Redsky API Response for Product={}, Response={}",productId, productData);
             }else if (!redskyAPIResponse.hasBody()){
-                logger.log(Level.WARNING, "Empty response from Redsky API");
+                logger.info("Empty response from Redsky API for productId={}", productId);
             }
-        }catch (RestClientException restExc){
-            logger.log(Level.SEVERE, "Redsky API Exception : "+restExc.getMessage());
+        }catch (InterruptedException | ExecutionException apiExce){
+            logger.error("Redsky API Exception : "+apiExce.getMessage());
+            throw new Exception("Redsky API Exception : "+apiExce.getMessage());
         }
 
         return productData;
-    }
-
-    /**
-     * Gets product detail by productId
-     *
-     * @param productId
-     * @return @{ProductAPIResponse}
-     */
-    @Override
-    public ProductAPIResponse getProductDetail(int productId) {
-
-        Product redskyProductData = getRedskyAPIProductData(productId);
-        ProductPriceData productPriceData = getProductPriceData(productId);
-
-        if(redskyProductData == null && productPriceData == null){
-            return null;
-        }
-        return buildProductAPIResponse(productId, redskyProductData, productPriceData);
     }
 
     /**
@@ -115,12 +122,11 @@ public class ProductServiceImpl implements ProductService {
                 productAPIResponse.setProductName(redskyProductData.getProductItem().getProductDescription().getTitle());
             }else{
                 productAPIResponse.setProductName("");
-                logger.log(Level.WARNING, "Product Item data not found");
+                logger.info("Product Item data not found");
             }
         }else{
-            logger.log(Level.WARNING, "Product not found in Redsky API");
+            logger.info("Product not found in Redsky API");
         }
-
 
         ProductPriceResponse priceResponse = null;
 
@@ -128,7 +134,7 @@ public class ProductServiceImpl implements ProductService {
             try {
                 priceResponse = objectMapper.readValue(productPriceData.getProductPrice(), ProductPriceResponse.class);
             } catch (JsonProcessingException ex) {
-                logger.log(Level.SEVERE, "Error parsing pricing data: "+ex.getMessage());
+                logger.error("Error parsing pricing data: "+ex.getMessage());
             }
         }
 

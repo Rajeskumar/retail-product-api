@@ -2,6 +2,12 @@ package com.retail.productapi.controller;
 
 import com.retail.productapi.domain.ProductAPIResponse;
 import com.retail.productapi.service.ProductService;
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiResponse;
+import io.swagger.annotations.ApiResponses;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -9,7 +15,10 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/v1")
+@Api(value = "/api/v1", description = "Retail Product API end point which aggregates product details from multiple sources.")
 public class ProductAPIController {
+
+    private static final Logger logger = LoggerFactory.getLogger(ProductAPIController.class);
 
     @Autowired
     ProductService productService;
@@ -21,14 +30,22 @@ public class ProductAPIController {
     }
 
 
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "OK"),
+            @ApiResponse(code = 400, message = "Bad request"),
+            @ApiResponse(code = 404, message = "Product Not found"),
+            @ApiResponse(code = 500, message = "Internal Server Error")})
+    @ApiOperation(value = "Retrieve Product and Price details by Product Id")
     @GetMapping(path = "/product/{productId}")
-    ResponseEntity<ProductAPIResponse> getProduct(@PathVariable("productId") int productId){
+    ResponseEntity<ProductAPIResponse> getProduct(@PathVariable("productId") int productId) throws Exception{
 
+        logger.info("getProduct() Incoming request productId={}", productId);
         ProductAPIResponse productAPIResponse = productService.getProductDetail(productId);
         ResponseEntity<ProductAPIResponse> responseEntity = null;
         if(productAPIResponse != null){
             responseEntity = new ResponseEntity<>(productAPIResponse, HttpStatus.OK);
         }else{
+            logger.info("getProduct(), ProductDetail not found for id={}", productId);
             responseEntity = new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
 
