@@ -4,6 +4,8 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.retail.productapi.dao.ProductPriceRepository;
 import com.retail.productapi.domain.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
@@ -11,8 +13,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClientException;
 
 import java.util.Optional;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 @Service
 public class ProductServiceImpl implements ProductService {
@@ -23,7 +23,7 @@ public class ProductServiceImpl implements ProductService {
 
     private ExternalAPIService externalAPIService;
 
-    private static final Logger logger = Logger.getLogger(ProductServiceImpl.class.getName());
+    private static final Logger logger = LoggerFactory.getLogger(ProductServiceImpl.class);
 
     @Autowired
     public ProductServiceImpl(ProductPriceRepository productPriceRepository, ObjectMapper objectMapper, ExternalAPIService externalAPIService) {
@@ -51,7 +51,7 @@ public class ProductServiceImpl implements ProductService {
         if(productPriceData.isPresent()){
             return productPriceData.get();
         }else{
-            logger.log(Level.WARNING, "Pricing Data not available in Datastore.");
+            logger.info("Pricing Data not available in Datastore.");
             return null;
         }
     }
@@ -72,10 +72,10 @@ public class ProductServiceImpl implements ProductService {
             if(redskyAPIResponse.getStatusCode().is2xxSuccessful()){
                 productData = redskyAPIResponse.getBody().getProduct();
             }else if (!redskyAPIResponse.hasBody()){
-                logger.log(Level.WARNING, "Empty response from Redsky API");
+                logger.info("Empty response from Redsky API");
             }
         }catch (RestClientException restExc){
-            logger.log(Level.SEVERE, "Redsky API Exception : "+restExc.getMessage());
+            logger.error("Redsky API Exception : "+restExc.getMessage());
         }
 
         return productData;
@@ -115,10 +115,10 @@ public class ProductServiceImpl implements ProductService {
                 productAPIResponse.setProductName(redskyProductData.getProductItem().getProductDescription().getTitle());
             }else{
                 productAPIResponse.setProductName("");
-                logger.log(Level.WARNING, "Product Item data not found");
+                logger.info("Product Item data not found");
             }
         }else{
-            logger.log(Level.WARNING, "Product not found in Redsky API");
+            logger.info("Product not found in Redsky API");
         }
 
 
@@ -128,7 +128,7 @@ public class ProductServiceImpl implements ProductService {
             try {
                 priceResponse = objectMapper.readValue(productPriceData.getProductPrice(), ProductPriceResponse.class);
             } catch (JsonProcessingException ex) {
-                logger.log(Level.SEVERE, "Error parsing pricing data: "+ex.getMessage());
+                logger.error("Error parsing pricing data: "+ex.getMessage());
             }
         }
 
