@@ -2,6 +2,9 @@ package com.retail.productapi.domain;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+/**
+ * Domain class to holds Product data from RedskyAPI
+ */
 public class Product {
 
     @JsonProperty(value = "item")

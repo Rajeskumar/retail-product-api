@@ -1,18 +1,21 @@
 package com.retail.productapi.domain;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
 /**
- * This ProductPriceResponse class holds pricing response to be returned in ProductAPIResponse
+ * This ProductPriceRequest class holds pricing data to be updated in datastore
  */
-public class ProductPriceResponse {
+@JsonIgnoreProperties(ignoreUnknown = true)
+public class ProductPriceRequest {
 
     private double value;
 
     private String currency_code;
 
-    public ProductPriceResponse() {
+    public ProductPriceRequest() {
     }
 
-    public ProductPriceResponse(double value, String currency_code) {
+    public ProductPriceRequest(double value, String currency_code) {
         this.value = value;
         this.currency_code = currency_code;
     }
@@ -31,5 +34,13 @@ public class ProductPriceResponse {
 
     public void setCurrency_code(String currency_code) {
         this.currency_code = currency_code;
+    }
+
+    @Override
+    public String toString() {
+        return "ProductPriceRequest{" +
+                "value=" + value +
+                ", currency_code='" + currency_code + '\'' +
+                '}';
     }
 }

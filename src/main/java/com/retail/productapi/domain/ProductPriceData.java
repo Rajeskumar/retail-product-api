@@ -4,6 +4,9 @@ import org.springframework.data.cassandra.core.mapping.Column;
 import org.springframework.data.cassandra.core.mapping.PrimaryKey;
 import org.springframework.data.cassandra.core.mapping.Table;
 
+/**
+ * Domain class to holds pricing data from datastore
+ */
 @Table(value = "prod_price_table")
 public class ProductPriceData {
 

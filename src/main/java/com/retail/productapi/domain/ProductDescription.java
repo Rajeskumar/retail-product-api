@@ -1,5 +1,8 @@
 package com.retail.productapi.domain;
 
+/**
+ * Domain class to hold description details of the product from Redsky API.
+ */
 public class ProductDescription {
 
     private String title;
