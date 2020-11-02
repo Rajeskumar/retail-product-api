@@ -1,19 +1,15 @@
-package com.retail.productapi
+package com.retail.productapi.integration
 
-import com.retail.productapi.domain.ProductAPIResponse
-import com.retail.productapi.domain.ProductPriceResponse
-import com.retail.productapi.service.ProductServiceImpl
+
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc
 import org.springframework.boot.test.context.SpringBootTest
-import org.springframework.boot.test.context.TestConfiguration
 import org.springframework.context.ApplicationContext
-import org.springframework.context.annotation.Bean
+import org.springframework.http.MediaType
 import org.springframework.test.web.servlet.MockMvc
 import org.springframework.test.web.servlet.MvcResult
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders
 import spock.lang.Specification
-import spock.mock.DetachedMockFactory
 
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -25,9 +21,6 @@ class ProductApiIntegrationSpec extends Specification {
     @Autowired
     MockMvc mvc
 
-    @Autowired
-    ProductServiceImpl productService
-
     def "test context loads"() {
         expect:
         context != null
@@ -36,27 +29,121 @@ class ProductApiIntegrationSpec extends Specification {
         context.containsBean("productUpdateRequestValidator")
     }
 
+
     def "hello word test"(){
 
-        given:
-        productService.getProductDetail(123456) >> new ProductAPIResponse(123456,
-                "Apple Pencil", new ProductPriceResponse(120.99, "USD"))
-
-        when: "Calling root path of product-api"
-        MvcResult result = mvc.perform(MockMvcRequestBuilders.get("http://localhost:8080/api/v1/product/123456")).andReturn()
+        when:
+        MvcResult result = mvc.perform(MockMvcRequestBuilders.get("/api/v1/")).andReturn()
         def response = result.response.contentAsString
 
         then:
-        response == "Welcome"
+        response == "Welcome to ProductAPI"
     }
 
-    @TestConfiguration
-    static class MockConfig {
-        def detachedMockFactory = new DetachedMockFactory()
+    def "Get Product API - Happy path scenario"(){
 
-        @Bean
-        ProductServiceImpl productService() {
-            return detachedMockFactory.Stub(ProductServiceImpl)
-        }
+        setup:
+        def expectedJson = '{"id":13264003,"name":"Jif Natural Creamy Peanut Butter - 40oz","current_price":{"value":13.99,"currency_code":"USD"}}'
+        when:
+        MvcResult result = mvc.perform(MockMvcRequestBuilders.get("/api/v1/product/13264003")).andReturn()
+
+        then:
+        result.response.getStatus() == 200
+        result.response.contentAsString == expectedJson
+
+    }
+
+    def "Get Product API - Product not found in any source"(){
+
+        when:
+        MvcResult result = mvc.perform(MockMvcRequestBuilders.get("/api/v1/product/1234567")).andReturn()
+
+        then:
+        result.response.getStatus() == 404
+        result.response.contentAsString == "Product not found for the Id"
+
+    }
+
+    def "Get Product API - Bad request"(){
+
+        when:
+        MvcResult result = mvc.perform(MockMvcRequestBuilders.get("/api/v1/product/adfs")).andReturn()
+
+        then:
+        result.response.getStatus() == 400
+
+    }
+
+    def "Update Product Price API - Happy path scenario"(){
+
+        setup:
+        def requestBody = '{"id":13264003,"name":"Jif Natural Creamy Peanut Butter - 40oz","current_price":{"value":13.99,"currency_code":"USD"}}'
+        def expectedJson = '{"id":13264003,"name":null,"current_price":{"value":13.99,"currency_code":"USD"}}'
+        when:
+        MvcResult result = mvc.perform(MockMvcRequestBuilders.put("/api/v1/product/13264003")
+                .content(requestBody).contentType(MediaType.APPLICATION_JSON)).andReturn()
+
+        then:
+        result.response.getStatus() == 200
+        result.response.contentAsString == expectedJson
+
+    }
+
+    def "Update Product Price API - Invalid request body"(){
+
+        setup:
+        def requestBody = '{"id":13264003,"name":"Jif Natural Creamy Peanut Butter - 40oz","current_price":{"value":, "currency_code":"USD"}}'
+        when:
+        MvcResult result = mvc.perform(MockMvcRequestBuilders.put("/api/v1/product/13264003")
+                .content(requestBody).contentType(MediaType.APPLICATION_JSON)).andReturn()
+
+        then:
+        result.response.getStatus() == 400
+        result.response.contentAsString == ""
+
+    }
+
+    def "Update Product Price API - product id mismatch in request body"(){
+
+        setup:
+        def requestBody = '{"id":123456,"name":"Jif Natural Creamy Peanut Butter - 40oz","current_price":{"value":13.99, "currency_code":"USD"}}'
+        when:
+        MvcResult result = mvc.perform(MockMvcRequestBuilders.put("/api/v1/product/13264003")
+                .content(requestBody).contentType(MediaType.APPLICATION_JSON)).andReturn()
+
+        then:
+        result.response.getStatus() == 400
+        result.response.contentAsString == "Invalid ProductUpdate Request"
+
+    }
+
+    def "Update Product Price API - product id not found in datastore"(){
+
+        setup:
+        def requestBody = '{"id":123456,"name":"Jif Natural Creamy Peanut Butter - 40oz","current_price":{"value":13.99, "currency_code":"USD"}}'
+        def expectedResponse = '{"id":123456,"name":null,"current_price":{"value":13.99,"currency_code":"USD"}}'
+        when:
+        MvcResult result = mvc.perform(MockMvcRequestBuilders.put("/api/v1/product/123456")
+                .content(requestBody).contentType(MediaType.APPLICATION_JSON)).andReturn()
+
+        then:
+        result.response.getStatus() == 200
+        result.response.contentAsString == expectedResponse
+
+    }
+
+    def "Update Product Price API - Additional json node in the update request"(){
+
+        setup:
+        def requestBody = '{"id":13264003,"name":"Jif Natural Creamy Peanut Butter - 40oz", "category":"Food", "current_price":{"value":13.99,"currency_code":"USD"}}'
+        def expectedJson = '{"id":13264003,"name":null,"current_price":{"value":13.99,"currency_code":"USD"}}'
+        when:
+        MvcResult result = mvc.perform(MockMvcRequestBuilders.put("/api/v1/product/13264003")
+                .content(requestBody).contentType(MediaType.APPLICATION_JSON)).andReturn()
+
+        then:
+        result.response.getStatus() == 200
+        result.response.contentAsString == expectedJson
+
     }
 }

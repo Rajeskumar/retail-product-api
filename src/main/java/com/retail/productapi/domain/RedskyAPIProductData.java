@@ -2,6 +2,9 @@ package com.retail.productapi.domain;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
+/**
+ * This class holds product data from Redsky API.
+ */
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class RedskyAPIProductData {
 

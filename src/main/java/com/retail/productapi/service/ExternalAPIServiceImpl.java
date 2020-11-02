@@ -5,7 +5,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.http.ResponseEntity;
-import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
@@ -13,6 +12,10 @@ import org.springframework.web.client.RestTemplate;
 import java.time.Duration;
 import java.util.concurrent.CompletableFuture;
 
+/**
+ * This class is an generic implementation to retrieve response from external api
+ * @param <T>
+ */
 @Service
 public class ExternalAPIServiceImpl<T> implements ExternalAPIService{
 
@@ -34,15 +37,15 @@ public class ExternalAPIServiceImpl<T> implements ExternalAPIService{
 
 
     /**
-     * Fetches external api response
+     * Fetches external api response and returns completablefuture response
      *
      * @param apiURL
-     * @return
+     * @return {@link CompletableFuture<T>}
      */
     @Override
     public CompletableFuture<ResponseEntity<T>> fetchAPIResponse(String apiURL, Class responseType) throws RestClientException {
 
-        logger.info("Fetching External Api Response");
+        logger.info("Fetching External Api Response from api = {}", apiURL);
         ResponseEntity<T> response = restTemplate.getForEntity(apiURL, responseType);
 
         return CompletableFuture.completedFuture(response);

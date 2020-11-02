@@ -1,5 +1,8 @@
 package com.retail.productapi.domain;
 
+/**
+ * This ProductPriceResponse class holds pricing response to be returned in ProductAPIResponse
+ */
 public class ProductPriceResponse {
 
     private double value;
@@ -28,5 +31,13 @@ public class ProductPriceResponse {
 
     public void setCurrency_code(String currency_code) {
         this.currency_code = currency_code;
+    }
+
+    @Override
+    public String toString() {
+        return "ProductPriceResponse{" +
+                "value=" + value +
+                ", currency_code='" + currency_code + '\'' +
+                '}';
     }
 }

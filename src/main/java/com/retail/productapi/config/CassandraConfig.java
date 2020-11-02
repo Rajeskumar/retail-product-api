@@ -4,6 +4,9 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.cassandra.config.AbstractCassandraConfiguration;
 
+/**
+ * Configuration class which holds configs for Cassandra datastore.
+ */
 @Configuration
 public class CassandraConfig extends AbstractCassandraConfiguration {
 

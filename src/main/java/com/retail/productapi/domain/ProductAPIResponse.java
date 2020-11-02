@@ -2,6 +2,9 @@ package com.retail.productapi.domain;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+/**
+ * This ProductAPIReponse holds complete Product detail response from redsky API and pricing data from datastore.
+ */
 public class ProductAPIResponse {
 
     @JsonProperty("id")

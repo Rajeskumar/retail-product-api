@@ -7,6 +7,9 @@ import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 
 import java.util.concurrent.Executor;
 
+/**
+ * Configuration class that holds configs for the application.
+ */
 @Configuration
 @EnableRetry
 public class AppConfig {
