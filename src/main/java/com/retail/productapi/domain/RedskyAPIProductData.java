@@ -20,4 +20,10 @@ public class RedskyAPIProductData {
     public void setProduct(Product product) {
         this.product = product;
     }
+
+    @Override
+    public String toString() {
+        return "RedskyAPIProductData = { " + product +
+                '}';
+    }
 }

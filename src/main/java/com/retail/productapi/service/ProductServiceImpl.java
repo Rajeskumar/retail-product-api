@@ -9,6 +9,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.cache.annotation.CachePut;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.cassandra.CassandraConnectionFailureException;
 import org.springframework.stereotype.Service;
 
@@ -100,8 +102,7 @@ public class ProductServiceImpl implements ProductService {
             String updatedPrice = objectMapper.writeValueAsString(productUpdateRequest.getProductPriceRequest());
             updatePriceRequest = new ProductPriceData(productUpdateRequest.getProductId(), updatedPrice);
 
-            //Save to datastore
-            updatedPriceData = productPriceRepository.save(updatePriceRequest);
+            updatedPriceData = updatePriceDataToDatastore(updatePriceRequest);
 
         } catch (JsonProcessingException exc){
             logger.error("Json Processing Exception while parsing product Price request ", exc);
@@ -115,22 +116,39 @@ public class ProductServiceImpl implements ProductService {
     }
 
     /**
+     * Updates the Price data to datastore
+     * @param newPriceData, update pricing request for the product.
+     * @return
+     */
+    @CachePut(value = "productPriceDataCache", key = "#newPriceData.productId", unless = "#result == null")
+    private ProductPriceData updatePriceDataToDatastore(ProductPriceData newPriceData) throws CassandraConnectionFailureException{
+
+        ProductPriceData updatedPriceData = null;
+        //Save to datastore
+        updatedPriceData = productPriceRepository.save(newPriceData);
+
+        return updatedPriceData;
+    }
+
+    /**
      * Gets Product pricing data from datastore by productId
      *
      * @param productId
      * @return {@link ProductPriceData}
      */
+    @Cacheable(value = "productPriceDataCache", key = "#productId", unless = "#result == null")
     public ProductPriceData getProductPriceData(int productId) {
 
         Optional<ProductPriceData> productPriceData = null;
         ProductPriceData priceData = null;
 
         try{
+            logger.info("Getting pricing data from datastore, productId = {}", productId);
             productPriceData = productPriceRepository.findById(productId);
 
             if(productPriceData != null && productPriceData.isPresent()){
                 priceData = productPriceData.get();
-                logger.debug("Product Price Data from Datastore, {}",priceData);
+                logger.info("Product Price Data from Datastore, {}",priceData);
             }else{
                 logger.info("Pricing Data not available in Datastore.");
             }

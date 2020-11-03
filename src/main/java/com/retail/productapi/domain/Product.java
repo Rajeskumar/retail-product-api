@@ -20,4 +20,10 @@ public class Product {
     public void setProductItem(ProductItem productItem) {
         this.productItem = productItem;
     }
+
+    @Override
+    public String toString() {
+        return "Product = { " + productItem +
+                '}';
+    }
 }

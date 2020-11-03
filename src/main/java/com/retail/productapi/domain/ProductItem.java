@@ -21,4 +21,9 @@ public class ProductItem {
         this.productDescription = productDescription;
     }
 
+    @Override
+    public String toString() {
+        return "ProductItem = { " + productDescription +
+                '}';
+    }
 }

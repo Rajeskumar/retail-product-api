@@ -21,6 +21,11 @@ dependencies {
 	implementation 'org.springframework.retry:spring-retry:1.2.5.RELEASE'
 	implementation 'org.springframework:spring-aspects:5.2.8.RELEASE'
 
+	//Cache Implementation Dependencies
+	implementation 'org.springframework.boot:spring-boot-starter-cache'
+	implementation 'javax.cache:cache-api'
+	implementation 'org.ehcache:ehcache'
+
 	testImplementation('org.springframework.boot:spring-boot-starter-test') {
 		exclude group: 'org.junit.vintage', module: 'junit-vintage-engine'
 	}

@@ -4,11 +4,13 @@ import org.springframework.data.cassandra.core.mapping.Column;
 import org.springframework.data.cassandra.core.mapping.PrimaryKey;
 import org.springframework.data.cassandra.core.mapping.Table;
 
+import java.io.Serializable;
+
 /**
  * Domain class to holds pricing data from datastore
  */
 @Table(value = "prod_price_table")
-public class ProductPriceData {
+public class ProductPriceData implements Serializable {
 
     @PrimaryKey (value = "prod_id")
     private int productId;
@@ -35,5 +37,13 @@ public class ProductPriceData {
 
     public void setProductPrice(String productPrice) {
         this.productPrice = productPrice;
+    }
+
+    @Override
+    public String toString() {
+        return "ProductPriceData ={" +
+                "productId=" + productId +
+                ", productPrice='" + productPrice + '\'' +
+                '}';
     }
 }
