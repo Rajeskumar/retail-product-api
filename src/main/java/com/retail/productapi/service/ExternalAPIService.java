@@ -1,9 +1,9 @@
 package com.retail.productapi.service;
 
+import com.retail.productapi.exception.RestTemplateRetryException;
 import org.springframework.retry.annotation.Backoff;
 import org.springframework.retry.annotation.Retryable;
 import org.springframework.scheduling.annotation.Async;
-import org.springframework.web.client.HttpServerErrorException;
 
 import java.util.concurrent.CompletableFuture;
 
@@ -16,6 +16,6 @@ public interface ExternalAPIService<T> {
      * @return {@link CompletableFuture<T>}
      */
     @Async
-    @Retryable(value = HttpServerErrorException.class, backoff = @Backoff(delay = 500))
-    CompletableFuture<T> fetchAPIResponse (String apiURL, Class<T> responseType);
+    @Retryable(value = RestTemplateRetryException.class, backoff = @Backoff(delay = 1000))
+    CompletableFuture<T> getAPIResponse(String apiURL, Class<T> responseType);
 }

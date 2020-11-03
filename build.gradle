@@ -6,7 +6,7 @@ plugins {
 }
 
 group = 'com.retail'
-version = '0.0.1-SNAPSHOT'
+version = version
 sourceCompatibility = '11'
 
 repositories {

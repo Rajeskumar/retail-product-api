@@ -30,7 +30,7 @@ class ProductApiIntegrationSpec extends Specification {
     }
 
 
-    def "hello word test"(){
+    def "ProductAPI Welcome path test"(){
 
         when:
         MvcResult result = mvc.perform(MockMvcRequestBuilders.get("/api/v1/")).andReturn()
@@ -113,7 +113,7 @@ class ProductApiIntegrationSpec extends Specification {
 
         then:
         result.response.getStatus() == 400
-        result.response.contentAsString == "Invalid ProductUpdate Request"
+        result.response.contentAsString == "Invalid Product request"
 
     }
 

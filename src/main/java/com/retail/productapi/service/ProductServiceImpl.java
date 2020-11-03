@@ -10,7 +10,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.cassandra.CassandraConnectionFailureException;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.util.Optional;
@@ -53,37 +52,34 @@ public class ProductServiceImpl implements ProductService {
      * @return @{ProductAPIResponse}
      */
     @Override
-    public ProductAPIResponse getProductDetail(int productId) throws Exception{
+    public ProductAPIResponse getProductDetail(int productId){
 
         Product redskyProductData = null;
         ProductPriceData productPriceData = null;
+        ProductAPIResponse productAPIResponse = null;
 
         try{
             //Fetch product data from Redsky API.
-            CompletableFuture<ResponseEntity<RedskyAPIProductData>> apiResponse = externalAPIService
-                    .fetchAPIResponse(redskyAPIURLBase+productId+redskyAPIURLParams, RedskyAPIProductData.class);
+            CompletableFuture<RedskyAPIProductData> apiResponse = externalAPIService
+                    .getAPIResponse(redskyAPIURLBase+productId+redskyAPIURLParams, RedskyAPIProductData.class);
 
             //Fetch pricing data from datastore.
             productPriceData = getProductPriceData(productId);
 
-            ResponseEntity<RedskyAPIProductData> redskyAPIResponse = apiResponse.get();
+            RedskyAPIProductData redskyResponse = apiResponse.get();
 
-            if(redskyAPIResponse.getStatusCode().is2xxSuccessful()){
-                redskyProductData = redskyAPIResponse.getBody().getProduct();
-                logger.info("Redsky API Response for Product={}, Response={}",productId, redskyProductData);
-            }else if(redskyAPIResponse.getStatusCode().is5xxServerError()){
-                logger.error("Redsky API Server Unavailable, getting 500s");
-            }else if (!redskyAPIResponse.hasBody()){
-                logger.info("Empty response from Redsky API for productId={}", productId);
+            if(redskyResponse != null){
+                redskyProductData = redskyResponse.getProduct();
             }
+
         }catch (InterruptedException | ExecutionException apiExce){
             logger.error("Redsky API Exception : "+apiExce.getMessage());
         }
 
-        if(redskyProductData == null && productPriceData == null){
-            return null;
+        if(redskyProductData != null || productPriceData != null){
+            productAPIResponse = buildProductAPIResponse(productId, redskyProductData, productPriceData);
         }
-        return buildProductAPIResponse(productId, redskyProductData, productPriceData);
+        return productAPIResponse;
     }
 
     /**
@@ -127,20 +123,22 @@ public class ProductServiceImpl implements ProductService {
     public ProductPriceData getProductPriceData(int productId) {
 
         Optional<ProductPriceData> productPriceData = null;
+        ProductPriceData priceData = null;
 
         try{
             productPriceData = productPriceRepository.findById(productId);
 
+            if(productPriceData != null && productPriceData.isPresent()){
+                priceData = productPriceData.get();
+                logger.debug("Product Price Data from Datastore, {}",priceData);
+            }else{
+                logger.info("Pricing Data not available in Datastore.");
+            }
         }catch (CassandraConnectionFailureException exc){
             logger.error("Cassandra Datastore Connection Exception : "+exc.getMessage());
         }
 
-        if(productPriceData != null && productPriceData.isPresent()){
-            return productPriceData.get();
-        }else{
-            logger.info("Pricing Data not available in Datastore.");
-            return null;
-        }
+        return priceData;
     }
 
     /**

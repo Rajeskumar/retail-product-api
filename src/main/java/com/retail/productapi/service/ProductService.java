@@ -17,7 +17,7 @@ public interface ProductService {
      * @param productId
      * @return {@link ProductAPIResponse}
      */
-    ProductAPIResponse getProductDetail(int productId) throws Exception;
+    ProductAPIResponse getProductDetail(int productId);
 
     /**
      * Updates product price data to datastore from the update request.

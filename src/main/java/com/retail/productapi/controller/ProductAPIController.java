@@ -42,7 +42,7 @@ public class ProductAPIController {
 
     /**
      * Get Product endpoint to retrieve Product details from Redsky API and datastore
-     * @param productId
+     * @param productId, Unique ID for the product
      * @return {@link ProductAPIResponse} holds product data and pricing data for the given product id.
      * @throws Exception
      */
@@ -53,7 +53,7 @@ public class ProductAPIController {
             @ApiResponse(code = 500, message = "Internal Server Error")})
     @ApiOperation(value = "Retrieve Product and Price details by Product Id")
     @GetMapping(path = "/product/{productId}")
-    ResponseEntity getProduct(@PathVariable("productId") int productId) throws Exception{
+    ResponseEntity getProduct(@PathVariable("productId") int productId){
 
         logger.info("getProduct() Incoming request productId={}", productId);
         ProductAPIResponse productAPIResponse = productService.getProductDetail(productId);
@@ -68,6 +68,13 @@ public class ProductAPIController {
         return responseEntity;
     }
 
+    /**
+     * Put method to update the Product price data in datastore.
+     * @param productId, Unique ID for the product
+     * @param productUpdateRequest, product price update request
+     * @return
+     * @throws Exception
+     */
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "OK"),
             @ApiResponse(code = 400, message = "Bad request"),
@@ -76,28 +83,19 @@ public class ProductAPIController {
     @ApiOperation(value = "Retrieve Product and Price details by Product Id")
     @PutMapping(path = "/product/{productId}", consumes = "application/json")
     ResponseEntity updateProduct (@PathVariable("productId") int productId,
-                                  @RequestBody ProductUpdateRequest productUpdateRequest){
+                                  @RequestBody ProductUpdateRequest productUpdateRequest) throws Exception{
 
         logger.info("updateProduct() Incoming update request = {}", productUpdateRequest.toString());
         ResponseEntity responseEntity = null;
         ProductAPIResponse productAPIResponse = null;
 
         if(validator.isValidRequest(productUpdateRequest, productId)) {
-            try {
-                productAPIResponse = productService.updateProductPriceData(productUpdateRequest);
+            productAPIResponse = productService.updateProductPriceData(productUpdateRequest);
 
-                responseEntity = new ResponseEntity<>(productAPIResponse, HttpStatus.OK);
-
-            } catch (BadRequestException e) {
-                logger.error("updateProduct Endpoint, Error : Invalid request = {}", productUpdateRequest);
-                responseEntity = new ResponseEntity(e.getMessage(), HttpStatus.BAD_REQUEST);
-            } catch (CassandraConnectionFailureException e){
-                logger.error("Datastore Host not available, ",e);
-                responseEntity = new ResponseEntity(e.getMessagesByHost(), HttpStatus.INTERNAL_SERVER_ERROR);
-            }
+            responseEntity = new ResponseEntity<>(productAPIResponse, HttpStatus.OK);
         }else{
             logger.error("updateProduct Endpoint, Error : Invalid request = {}", productUpdateRequest);
-            responseEntity = new ResponseEntity("Invalid ProductUpdate Request", HttpStatus.BAD_REQUEST);
+            throw new BadRequestException("Invalid ProductUpdate Request");
         }
 
         return responseEntity;

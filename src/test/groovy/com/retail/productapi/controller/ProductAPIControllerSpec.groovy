@@ -4,6 +4,7 @@ import com.retail.productapi.domain.ProductAPIResponse
 import com.retail.productapi.domain.ProductPriceRequest
 import com.retail.productapi.domain.ProductPriceResponse
 import com.retail.productapi.domain.ProductUpdateRequest
+import com.retail.productapi.exception.BadRequestException
 import com.retail.productapi.service.ProductService
 import com.retail.productapi.validator.ProductUpdateRequestValidator
 import org.springframework.data.cassandra.CassandraConnectionFailureException
@@ -97,7 +98,7 @@ class ProductAPIControllerSpec extends Specification {
         then:
         0 * productService.updateProductPriceData(updateRequest) >> response
 
-        actual.statusCode == HttpStatus.BAD_REQUEST
+        thrown(BadRequestException)
 
     }
 
@@ -114,7 +115,7 @@ class ProductAPIControllerSpec extends Specification {
         then:
         1 * productService.updateProductPriceData(updateRequest) >> {throw new CassandraConnectionFailureException(new HashMap<InetSocketAddress, Throwable>(), "Host not available", new Throwable())}
 
-        actual.statusCode == HttpStatus.INTERNAL_SERVER_ERROR
+        thrown(CassandraConnectionFailureException)
 
     }
 }

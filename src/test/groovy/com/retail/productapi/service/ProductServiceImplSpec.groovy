@@ -5,9 +5,6 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import com.retail.productapi.dao.ProductPriceRepository
 import com.retail.productapi.domain.*
 import org.springframework.data.cassandra.CassandraConnectionFailureException
-import org.springframework.http.HttpStatus
-import org.springframework.http.ResponseEntity
-import org.springframework.web.client.HttpServerErrorException
 import spock.lang.Specification
 
 import java.util.concurrent.CompletableFuture
@@ -49,8 +46,7 @@ class ProductServiceImplSpec extends Specification {
 
         then:
         1 * priceRepository.findById(productId) >> new Optional<ProductPriceData>(priceData)
-        1 * externalAPIService.fetchAPIResponse(_,_) >> new CompletableFuture<ResponseEntity<RedskyAPIProductData>>()
-                .completedFuture(new ResponseEntity<RedskyAPIProductData>(redskyAPIProductData, HttpStatus.OK))
+        1 * externalAPIService.getAPIResponse(_,_) >> new CompletableFuture<Product>().completedFuture(redskyAPIProductData)
         1 * objectMapper.readValue(_,_) >> new ProductPriceResponse(104.99, '"currency_code":"USD"')
 
         actual.productId == 123456
@@ -74,8 +70,7 @@ class ProductServiceImplSpec extends Specification {
         then:
         1 * priceRepository.findById(productId) >> new Optional<ProductPriceData>()
         0 * objectMapper.readValue(_,_)
-        1 * externalAPIService.fetchAPIResponse(_,_) >> new CompletableFuture<ResponseEntity<RedskyAPIProductData>>()
-                .completedFuture(new ResponseEntity<RedskyAPIProductData>(redskyAPIProductData, HttpStatus.OK))
+        1 * externalAPIService.getAPIResponse(_,_) >> new CompletableFuture<Product>().completedFuture(redskyAPIProductData)
 
         actual.productId == 123456
         actual.productName == "Apple Pencil"
@@ -88,19 +83,16 @@ class ProductServiceImplSpec extends Specification {
         int productId = 123456
         ProductPriceData priceData = new ProductPriceData(123456, '{"value":104.99, "currency_code":"USD"}')
 
-        redskyAPIProductData.product=product
-
         when:
         def actual = productService.getProductDetail(productId)
 
         then:
         1 * priceRepository.findById(productId) >> new Optional<ProductPriceData>(priceData)
         1 * objectMapper.readValue(_,_) >> new ProductPriceResponse(104.99, '"currency_code":"USD"')
-        1 * externalAPIService.fetchAPIResponse(_,_) >> new CompletableFuture<ResponseEntity<RedskyAPIProductData>>()
-                .completedFuture(new ResponseEntity<RedskyAPIProductData>(redskyAPIProductData, HttpStatus.OK))
+        1 * externalAPIService.getAPIResponse(_,_) >> new CompletableFuture<Product>().completedFuture(redskyAPIProductData)
 
         actual.productId == 123456
-        actual.productName == ""
+        actual.productName == null
         actual.productPriceResponse.value == 104.99
         actual.productPriceResponse.currency_code == '"currency_code":"USD"'
     }
@@ -120,8 +112,7 @@ class ProductServiceImplSpec extends Specification {
         then:
         1 * priceRepository.findById(productId) >> {throw new CassandraConnectionFailureException(new HashMap<InetSocketAddress, Throwable>(), "Host not available", new Throwable())}
         0 * objectMapper.readValue(_,_)
-        1 * externalAPIService.fetchAPIResponse(_,_) >> new CompletableFuture<ResponseEntity<RedskyAPIProductData>>()
-                .completedFuture(new ResponseEntity<RedskyAPIProductData>(redskyAPIProductData, HttpStatus.OK))
+        1 * externalAPIService.getAPIResponse(_,_) >> new CompletableFuture<Product>().completedFuture(redskyAPIProductData)
 
         actual.productId == 123456
         actual.productName == "Apple Pencil"
@@ -139,8 +130,7 @@ class ProductServiceImplSpec extends Specification {
         then:
         1 * priceRepository.findById(productId) >> new Optional<ProductPriceData>(priceData)
         1 * objectMapper.readValue(_,_) >> new ProductPriceResponse(104.99, '"currency_code":"USD"')
-        1 * externalAPIService.fetchAPIResponse(_,_) >> new CompletableFuture<ResponseEntity<RedskyAPIProductData>>()
-                .completedFuture(new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR))
+        1 * externalAPIService.getAPIResponse(_,_) >> new CompletableFuture<Product>().completedFuture(null)
 
         actual.productId == 123456
         actual.productName == null
