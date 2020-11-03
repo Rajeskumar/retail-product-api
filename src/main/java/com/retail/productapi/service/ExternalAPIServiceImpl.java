@@ -69,7 +69,7 @@ public class ExternalAPIServiceImpl<T> implements ExternalAPIService{
             throw new RestTemplateRetryException("External API call failed. Retry enabled. Failed after retry attempts");
         }
 
-        logger.info("Fetched External Api Response from api = {}, response={}", apiURL, responseBody);
+        logger.info("Fetched response={}", responseBody);
         return CompletableFuture.completedFuture(responseBody);
     }
 }
