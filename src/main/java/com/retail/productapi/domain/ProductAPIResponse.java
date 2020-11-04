@@ -2,10 +2,12 @@ package com.retail.productapi.domain;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+import java.io.Serializable;
+
 /**
  * This ProductAPIReponse holds complete Product detail response from redsky API and pricing data from datastore.
  */
-public class ProductAPIResponse {
+public class ProductAPIResponse implements Serializable {
 
     @JsonProperty("id")
     private int productId;

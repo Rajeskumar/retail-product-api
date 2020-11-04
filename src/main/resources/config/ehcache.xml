@@ -9,7 +9,7 @@
     <!-- Retail Product cache template -->
     <cache-template name="retail-product-template">
         <expiry>
-            <ttl unit="seconds">30</ttl>
+            <ttl unit="seconds">120</ttl>
         </expiry>
         <listeners>
             <listener>
@@ -28,8 +28,8 @@
         </resources>
     </cache-template>
 
-    <cache alias="productPriceDataCache" uses-template="retail-product-template">
+    <cache alias="productAPIResponseCache" uses-template="retail-product-template">
         <key-type>java.lang.Integer</key-type>
-        <value-type>com.retail.productapi.domain.ProductPriceData</value-type>
+        <value-type>com.retail.productapi.domain.ProductAPIResponse</value-type>
     </cache>
 </config>

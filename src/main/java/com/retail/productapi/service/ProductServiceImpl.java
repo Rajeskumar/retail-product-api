@@ -9,7 +9,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.cache.annotation.CachePut;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.cassandra.CassandraConnectionFailureException;
 import org.springframework.stereotype.Service;
@@ -54,6 +53,7 @@ public class ProductServiceImpl implements ProductService {
      * @return @{ProductAPIResponse}
      */
     @Override
+    @Cacheable(value = "productAPIResponseCache", key = "#productId", unless = "#result == null")
     public ProductAPIResponse getProductDetail(int productId){
 
         Product redskyProductData = null;
@@ -120,7 +120,6 @@ public class ProductServiceImpl implements ProductService {
      * @param newPriceData, update pricing request for the product.
      * @return
      */
-    @CachePut(value = "productPriceDataCache", key = "#newPriceData.productId", unless = "#result == null")
     private ProductPriceData updatePriceDataToDatastore(ProductPriceData newPriceData) throws CassandraConnectionFailureException{
 
         ProductPriceData updatedPriceData = null;
@@ -136,7 +135,6 @@ public class ProductServiceImpl implements ProductService {
      * @param productId
      * @return {@link ProductPriceData}
      */
-    @Cacheable(value = "productPriceDataCache", key = "#productId", unless = "#result == null")
     public ProductPriceData getProductPriceData(int productId) {
 
         Optional<ProductPriceData> productPriceData = null;

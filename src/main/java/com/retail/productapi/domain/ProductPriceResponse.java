@@ -1,9 +1,11 @@
 package com.retail.productapi.domain;
 
+import java.io.Serializable;
+
 /**
  * This ProductPriceResponse class holds pricing response to be returned in ProductAPIResponse
  */
-public class ProductPriceResponse {
+public class ProductPriceResponse implements Serializable {
 
     private double value;
 
