@@ -22,6 +22,7 @@ public class ProductUpdateRequestValidator {
         if(updateRequest != null
                 && updateRequest.getProductId() > 0
                 && updateRequest.getProductPriceRequest()!=null
+                && updateRequest.getProductName()!=null
                 && updateRequest.getProductPriceRequest().getValue() > 0.0
                 && !StringUtils.isEmpty(updateRequest.getProductPriceRequest().getCurrency_code())){
             if(updateRequest.getProductId() == productId){

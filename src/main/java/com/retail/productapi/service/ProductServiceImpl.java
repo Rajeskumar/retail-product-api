@@ -111,7 +111,10 @@ public class ProductServiceImpl implements ProductService {
             throw exc;
         }
 
-        return buildProductAPIResponse(productUpdateRequest.getProductId(), null, updatedPriceData);
+        //Build Product object to set the title from update request
+        Product product = new Product(new ProductItem(new ProductDescription(productUpdateRequest.getProductName())));
+
+        return buildProductAPIResponse(productUpdateRequest.getProductId(), product, updatedPriceData);
     }
 
     /**
