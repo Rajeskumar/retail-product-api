@@ -7,3 +7,24 @@ services:
     command: "sh /init.sh"
     ports:
     - "127.0.0.1:9042:9042"
+    healthcheck:
+      test: ["CMD", "cqlsh", "-u cassandra", "-p cassandra" ,"-e describe keyspaces"]
+      interval: 10s
+      timeout: 50s
+      retries: 3
+    networks:
+      - product-network
+  retailapp:
+    image: retail-product-app:latest
+    build: ./retail-product-app
+    container_name: productapp
+    ports:
+      - "127.0.0.1:8080:8080"
+    depends_on:
+      cassandra:
+        condition: service_healthy
+    networks:
+      - product-network
+networks:
+  product-network:
+    driver: bridge

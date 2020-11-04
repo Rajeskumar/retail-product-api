@@ -19,15 +19,14 @@ Spring Boot, Java 11, Spock, Groovy, Cassandra, Gradle, Docker, Swagger2.
 #### Clone repository
 
     git clone https://github.com/Rajeskumar/retail-product-api.git
-
-#### Cassandra Local Setup
-
-    make run-cassandra
  
-#### Run app
 
-    make run
-    
+### Deploy app using Docker Container
+
+_Note: This will spin up Cassandra container and application container_
+
+    make deploy
+
 #### Swagger Endpoint
 <http://localhost:8080/swagger-ui.html>
 
@@ -49,3 +48,19 @@ curl -X PUT --header 'Content-Type: application/json' --header 'Accept: applicat
       } \ 
     }' 'http://localhost:8080/api/v1/product/13264003'
 
+```
+#### Cassandra Local Setup
+_Note: Run this, if want to run cassandra for debugging_
+
+    make run-cassandra
+
+#### Run Test
+_Note: Cassandra should be up_
+
+    make test
+
+#### Run app
+_Note: This is to run the app directly, update cassandra properties appropriately_
+
+    make run
+    

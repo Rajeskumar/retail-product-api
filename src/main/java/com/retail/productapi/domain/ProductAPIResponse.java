@@ -48,4 +48,13 @@ public class ProductAPIResponse {
     public void setProductPriceResponse(ProductPriceResponse productPriceResponse) {
         this.productPriceResponse = productPriceResponse;
     }
+
+    @Override
+    public String toString() {
+        return "ProductAPIResponse{" +
+                "productId=" + productId +
+                ", productName='" + productName + '\'' +
+                ", productPriceResponse=" + productPriceResponse +
+                '}';
+    }
 }

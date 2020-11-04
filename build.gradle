@@ -9,6 +9,15 @@ group = 'com.retail'
 version = version
 sourceCompatibility = '11'
 
+processResources {
+	filesMatching('version.properties') {
+		expand(project.properties)
+	}
+	filter(org.apache.tools.ant.filters.ReplaceTokens, tokens: [
+			"projectVersion": project.version
+	])
+}
+
 repositories {
 	mavenCentral()
 }
@@ -36,6 +45,11 @@ dependencies {
 	)
 }
 
+task copyBuiltJar(type: Copy){
+	from file("$buildDir/libs/")
+	include 'product-api*.jar'
+	into file("docker/retail-product-app/")
+}
 //configurations.all {
 //	exclude group: 'org.springframework.boot', module: 'spring-boot-starter-logging'
 //	exclude group: 'org.springframework.boot', module: 'logback-classic'

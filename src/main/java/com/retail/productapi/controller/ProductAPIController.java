@@ -27,11 +27,15 @@ public class ProductAPIController {
 
     private static final Logger logger = LoggerFactory.getLogger(ProductAPIController.class);
 
-    @Autowired
     ProductService productService;
 
-    @Autowired
     ProductUpdateRequestValidator validator;
+
+    @Autowired
+    public ProductAPIController(ProductService productService, ProductUpdateRequestValidator validator) {
+        this.productService = productService;
+        this.validator = validator;
+    }
 
     @GetMapping(path = "/")
     @ResponseBody

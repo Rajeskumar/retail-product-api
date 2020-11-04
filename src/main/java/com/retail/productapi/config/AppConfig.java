@@ -1,10 +1,15 @@
 package com.retail.productapi.config;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.retry.annotation.EnableRetry;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
+import org.springframework.web.client.RestTemplate;
 
+import java.time.Duration;
 import java.util.concurrent.Executor;
 
 /**
@@ -13,6 +18,22 @@ import java.util.concurrent.Executor;
 @Configuration
 @EnableRetry
 public class AppConfig {
+
+    @Value("${external.api.conn.timeout}")
+    private int externalAPIConnTimeout;
+
+    @Value("${external.api.read.timeout}")
+    private int externalAPIReadTimeout;
+
+    @Bean
+    RestTemplate appRestTemplate(){
+
+        RestTemplateBuilder builder = new RestTemplateBuilder();
+        builder.setConnectTimeout(Duration.ofSeconds(externalAPIConnTimeout));
+        builder.setReadTimeout(Duration.ofSeconds(externalAPIReadTimeout));
+
+        return builder.build();
+    }
 
     @Bean
     public Executor taskExecutor() {
