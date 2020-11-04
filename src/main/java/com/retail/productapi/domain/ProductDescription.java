@@ -10,6 +10,10 @@ public class ProductDescription {
     public ProductDescription() {
     }
 
+    public ProductDescription(String title) {
+        this.title = title;
+    }
+
     public String getTitle() {
         return title;
     }

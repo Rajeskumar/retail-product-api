@@ -13,6 +13,10 @@ public class ProductItem {
     public ProductItem() {
     }
 
+    public ProductItem(ProductDescription productDescription) {
+        this.productDescription = productDescription;
+    }
+
     public ProductDescription getProductDescription() {
         return productDescription;
     }
