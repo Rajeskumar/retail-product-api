@@ -9,6 +9,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.cache.annotation.CachePut;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.cassandra.CassandraConnectionFailureException;
 import org.springframework.stereotype.Service;
@@ -92,6 +93,7 @@ public class ProductServiceImpl implements ProductService {
      * @throws Exception
      */
     @Override
+    @CachePut(value = "productAPIResponseCache", key = "#productUpdateRequest.productId", unless = "#result == null")
     public ProductAPIResponse updateProductPriceData(ProductUpdateRequest productUpdateRequest) throws BadRequestException,
             CassandraConnectionFailureException{
 
