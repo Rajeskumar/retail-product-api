@@ -15,16 +15,14 @@ class ProductAPIControllerSpec extends Specification {
 
     ProductAPIController productAPIController
     ProductService productService = Mock(ProductService)
-    ProductUpdateRequestValidator validator
+    ProductUpdateRequestValidator validator = Mock(ProductUpdateRequestValidator)
     ProductAPIResponse response
     ProductPriceResponse priceResponse
     ProductUpdateRequest updateRequest
     ProductPriceRequest priceRequest
 
     def setup(){
-        productAPIController = new ProductAPIController()
-        productAPIController.productService = productService
-        productAPIController.validator = new ProductUpdateRequestValidator()
+        productAPIController = new ProductAPIController(productService, validator)
         response = new ProductAPIResponse()
     }
 
@@ -78,6 +76,7 @@ class ProductAPIControllerSpec extends Specification {
         def actual = productAPIController.updateProduct(productId, updateRequest)
 
         then:
+        1 * validator.isValidRequest(_,_) >> true
         1 * productService.updateProductPriceData(updateRequest) >> response
 
         actual.statusCode == HttpStatus.OK
@@ -96,7 +95,7 @@ class ProductAPIControllerSpec extends Specification {
         def actual = productAPIController.updateProduct(productId, updateRequest)
 
         then:
-        0 * productService.updateProductPriceData(updateRequest) >> response
+        0 * productService.updateProductPriceData(updateRequest)
 
         thrown(BadRequestException)
 
@@ -113,6 +112,7 @@ class ProductAPIControllerSpec extends Specification {
         def actual = productAPIController.updateProduct(productId, updateRequest)
 
         then:
+        1 * validator.isValidRequest(_,_) >> true
         1 * productService.updateProductPriceData(updateRequest) >> {throw new CassandraConnectionFailureException(new HashMap<InetSocketAddress, Throwable>(), "Host not available", new Throwable())}
 
         thrown(CassandraConnectionFailureException)

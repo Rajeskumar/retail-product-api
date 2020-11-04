@@ -35,7 +35,7 @@ public class ProductPriceResponse {
 
     @Override
     public String toString() {
-        return "ProductPriceResponse{" +
+        return "ProductPriceResponse = {" +
                 "value=" + value +
                 ", currency_code='" + currency_code + '\'' +
                 '}';
