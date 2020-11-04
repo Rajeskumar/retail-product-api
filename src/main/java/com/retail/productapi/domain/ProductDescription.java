@@ -18,4 +18,10 @@ public class ProductDescription {
         this.title = title;
     }
 
+    @Override
+    public String toString() {
+        return "ProductDescription = {" +
+                "title='" + title + '\'' +
+                '}';
+    }
 }
